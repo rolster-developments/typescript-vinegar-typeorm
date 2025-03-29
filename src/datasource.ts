@@ -8,7 +8,7 @@ import {
 } from '@rolster/vinegar';
 import { EntityManager, QueryRunner } from 'typeorm';
 
-type Resolver = (entityManager: EntityManager) => Promise<void>;
+type Resolver = (manager: EntityManager) => Promise<void>;
 
 export abstract class EntityDataSource extends AbstractEntityDataSource {
   abstract setQueryRunner(queryRunner: QueryRunner): void;

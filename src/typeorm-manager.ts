@@ -35,32 +35,32 @@ class TypeormVinegar implements AbstractTypeormVinegar {
   }
 }
 
-const TYPEORM_VINEGAR = new TypeormVinegar();
+const typeormVinegar = new TypeormVinegar();
 
 export function createVinegar(dataSource: DataSource): AbstractTypeormVinegar {
   return new TypeormVinegar(dataSource);
 }
 
 export function getCurrentVinegar(): AbstractTypeormVinegar {
-  return TYPEORM_VINEGAR;
+  return typeormVinegar;
 }
 
 export function setDataSource(dataSource: DataSource): void {
-  TYPEORM_VINEGAR.setDataSource(dataSource);
+  typeormVinegar.setDataSource(dataSource);
 }
 
 export function getDataSource(): Undefined<DataSource> {
-  return TYPEORM_VINEGAR.getDataSource();
+  return typeormVinegar.getDataSource();
 }
 
 export function createQueryRunner(): Undefined<QueryRunner> {
-  return TYPEORM_VINEGAR.createQueryRunner();
+  return typeormVinegar.createQueryRunner();
 }
 
 export function createRepository<T extends ObjectLiteral>(
   target: EntityTarget<T>
 ): Repository<T> {
-  const repository = TYPEORM_VINEGAR.createRepository(target);
+  const repository = typeormVinegar.createRepository(target);
 
   if (!repository) {
     throw Error(
