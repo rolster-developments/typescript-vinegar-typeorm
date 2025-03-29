@@ -4,11 +4,12 @@ import {
   AbstractProcedure,
   DirtyModel,
   Model,
-  ModelHideable
+  ModelHideable,
+  Transaction
 } from '@rolster/vinegar';
 import { EntityManager, QueryRunner } from 'typeorm';
 
-type Resolver = (manager: EntityManager) => Promise<void>;
+type Resolver = (entityManager: EntityManager) => Promise<void>;
 
 export abstract class EntityDataSource extends AbstractEntityDataSource {
   abstract setQueryRunner(queryRunner: QueryRunner): void;
@@ -25,13 +26,13 @@ export class TypeormEntityDataSource implements EntityDataSource {
     return this.resolver((manager) => voidPromise(manager.save(model)));
   }
 
-  public refresh(model: Model, dirty?: DirtyModel): Promise<void> {
+  public refresh(transaction: Transaction): Promise<void> {
+    return this.resolver((_) => transaction.execute());
+  }
+
+  public update(model: Model, dirty: DirtyModel): Promise<void> {
     return this.resolver((manager) =>
-      dirty
-        ? voidPromise(
-            manager.update(model.constructor, { id: model.id }, dirty)
-          )
-        : voidPromise(manager.save(model))
+      voidPromise(manager.update(model.constructor, { id: model.id }, dirty))
     );
   }
 
