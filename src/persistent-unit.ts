@@ -1,4 +1,4 @@
-import { AbstractPersistentUnit } from '@rolster/vinegar';
+import { AbstractPersistentUnit, PersistentUnitResult } from '@rolster/vinegar';
 import { EntityDatabase } from './database';
 import { EntityManager } from './entity-manager';
 import { AbstractTypeormVinegar, getCurrentVinegar } from './typeorm-manager';
@@ -19,10 +19,12 @@ export class TypeormPersistentUnit implements PersistentUnit {
     this.vinegar = vinegar;
   }
 
-  public async flush(): Promise<void> {
+  public async flush(): Promise<PersistentUnitResult[]> {
     try {
       const vinegar = this.vinegar ?? getCurrentVinegar();
       const queryRunner = vinegar.createQueryRunner();
+
+      let results: PersistentUnitResult[] = [];
 
       if (queryRunner) {
         this.database.setQueryRunner(queryRunner);
@@ -30,9 +32,11 @@ export class TypeormPersistentUnit implements PersistentUnit {
 
         await this.database.connect();
         await this.database.transaction();
-        await this.manager.flush();
+        results = await this.manager.flush();
         await this.database.commit();
       }
+
+      return results;
     } catch (error) {
       await this.database.rollback();
 
