@@ -4,11 +4,15 @@ import {
   EntityRefresh as VinegarEntityRefresh
 } from '@rolster/vinegar';
 import { Repository } from 'typeorm';
+import { Transaction } from './types';
 
 export abstract class EntityRefresh<
-  E extends AbstractEntity,
-  M extends AbstractModel
-> extends VinegarEntityRefresh<E, M> {
+    E extends AbstractEntity,
+    M extends AbstractModel
+  >
+  extends VinegarEntityRefresh<E, M>
+  implements Transaction<M>
+{
   constructor(
     entity: E,
     model: M,

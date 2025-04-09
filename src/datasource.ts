@@ -5,22 +5,26 @@ import {
   Model,
   ModelHideable,
   PersistentUnitResultCode,
-  PersistentUnitResult as Result,
-  Transaction
+  PersistentUnitResult as Result
 } from '@rolster/vinegar';
 import { EntityManager, QueryRunner } from 'typeorm';
+import { AbstractModel, Transaction } from './types';
 
 type Resolver = (entityManager: EntityManager) => Promise<Result>;
 
-function success(code: PersistentUnitResultCode, model?: Model) {
+function success(code: PersistentUnitResultCode, model?: AbstractModel) {
   return new Result(code, undefined, model);
 }
 
-function failure(code: PersistentUnitResultCode, error?: any, model?: Model) {
+function failure(
+  code: PersistentUnitResultCode,
+  error?: any,
+  model?: AbstractModel
+) {
   return new Result(code, error, model);
 }
 
-export abstract class EntityDataSource extends AbstractEntityDataSource {
+export abstract class EntityDataSource extends AbstractEntityDataSource<Transaction> {
   abstract setQueryRunner(queryRunner: QueryRunner): void;
 }
 
@@ -52,7 +56,7 @@ export class TypeormEntityDataSource implements EntityDataSource {
           return success('refresh');
         })
         .catch((err) => {
-          return failure('refresh', err);
+          return failure('refresh', err, transaction.model);
         })
     );
   }
