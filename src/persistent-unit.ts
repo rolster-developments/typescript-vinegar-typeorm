@@ -31,8 +31,11 @@ export class TypeormPersistentUnit implements PersistentUnit {
         this.manager.setQueryRunner(queryRunner);
 
         await this.database.connect();
+
         await this.database.transaction();
+
         results = await this.manager.flush();
+        
         await this.database.commit();
       }
 

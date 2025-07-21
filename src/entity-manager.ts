@@ -10,10 +10,10 @@ export abstract class EntityManager extends AbstractEntityManager {
 }
 
 export class TypeormEntityManager
-  extends RolsterEntityManager
+  extends RolsterEntityManager<EntityDataSource>
   implements EntityManager
 {
-  constructor(private dataSource: EntityDataSource) {
+  constructor(dataSource: EntityDataSource) {
     super(dataSource);
   }
 

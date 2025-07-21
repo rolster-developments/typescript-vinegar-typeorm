@@ -3,7 +3,7 @@ import {
   Model as RolsterModel,
   ModelEditable as RolsterModelEditable,
   ModelHideable as RolsterModelHideable,
-  Transaction as VinegarTransaction
+  Transaction as RolsterTransaction
 } from '@rolster/vinegar';
 import { ObjectLiteral } from 'typeorm';
 
@@ -16,6 +16,6 @@ export interface ModelHideable extends ObjectLiteral, RolsterModelHideable {}
 export interface Model extends ObjectLiteral, RolsterModel {}
 
 export interface Transaction<M extends AbstractModel = AbstractModel>
-  extends VinegarTransaction {
+  extends RolsterTransaction {
   model: M;
 }

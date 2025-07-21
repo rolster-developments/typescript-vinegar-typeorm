@@ -1,7 +1,7 @@
 import {
   AbstractEntity,
   AbstractModel,
-  EntityRefresh as VinegarEntityRefresh
+  EntityRefresh as RolsterEntityRefresh
 } from '@rolster/vinegar';
 import { Repository } from 'typeorm';
 import { Transaction } from './types';
@@ -10,7 +10,7 @@ export abstract class EntityRefresh<
     E extends AbstractEntity,
     M extends AbstractModel
   >
-  extends VinegarEntityRefresh<E, M>
+  extends RolsterEntityRefresh<E, M>
   implements Transaction<M>
 {
   constructor(
@@ -23,7 +23,7 @@ export abstract class EntityRefresh<
   }
 
   public async execute(): Promise<void> {
-    this.refresh();
+    this.refresh(this.manager);
 
     await this.repository.save(this.model);
   }

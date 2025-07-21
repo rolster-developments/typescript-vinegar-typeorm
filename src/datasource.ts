@@ -36,84 +36,78 @@ export class TypeormEntityDataSource implements EntityDataSource {
   }
 
   public insert(model: Model): Promise<Result> {
-    return this.resolver((manager) =>
-      manager
-        .save(model)
-        .then(() => {
-          return success('insert', model);
-        })
-        .catch((err) => {
-          return failure('insert', err, model);
-        })
-    );
+    return this.resolver(async (manager) => {
+      try {
+        await manager.save(model);
+
+        return success('insert', model);
+      } catch (err) {
+        return failure('insert', err, model);
+      }
+    });
   }
 
   public refresh(transaction: Transaction): Promise<Result> {
-    return this.resolver((_) =>
-      transaction
-        .execute()
-        .then(() => {
-          return success('refresh');
-        })
-        .catch((err) => {
-          return failure('refresh', err, transaction.model);
-        })
-    );
+    return this.resolver(async (_) => {
+      try {
+        await transaction.execute();
+
+        return success('refresh');
+      } catch (err) {
+        return failure('refresh', err);
+      }
+    });
   }
 
   public update(model: Model, dirty: DirtyModel): Promise<Result> {
-    return this.resolver((manager) =>
-      manager
-        .update(model.constructor, { id: model.id }, dirty)
-        .then(() => {
-          return success('update', model);
-        })
-        .catch((err) => {
-          return failure('update', err, model);
-        })
-    );
+    return this.resolver(async (manager) => {
+      try {
+        await manager.update(model.constructor, { id: model.id }, dirty);
+
+        return success('update', model);
+      } catch (err) {
+        return failure('update', err, model);
+      }
+    });
   }
 
   public delete(model: Model): Promise<Result> {
-    return this.resolver((manager) =>
-      manager
-        .remove(model)
-        .then(() => {
-          return success('delete', model);
-        })
-        .catch((err) => {
-          return failure('delete', err, model);
-        })
-    );
+    return this.resolver(async (manager) => {
+      try {
+        await manager.remove(model);
+
+        return success('delete', model);
+      } catch (err) {
+        return failure('delete', err, model);
+      }
+    });
   }
 
   public hidden(model: ModelHideable): Promise<Result> {
-    return this.resolver((manager) => {
-      model.hiddenAt = new Date();
-      model.hidden = true;
+    return this.resolver(async (manager) => {
+      try {
+        model.hiddenAt = new Date();
+        model.hidden = true;
 
-      return manager
-        .update(model.constructor, { id: model.id }, model)
-        .then(() => {
-          return success('hidden', model);
-        })
-        .catch((err) => {
-          return failure('hidden', err, model);
-        });
+        await manager.update(model.constructor, { id: model.id }, model);
+
+        return success('hidden', model);
+      } catch (err) {
+        return failure('hidden', err, model);
+      }
     });
   }
 
   public procedure(procedure: AbstractProcedure): Promise<Result> {
-    return this.resolver((manager) =>
-      procedure
-        .execute(manager)
-        .then(() => {
-          return success('procedure');
-        })
-        .catch((err) => {
-          return failure('procedure', err);
-        })
-    );
+    return this.resolver(async (manager) => {
+      try {
+        await procedure.execute(manager);
+
+        return success('procedure');
+      } catch (err) {
+        return failure('procedure', err);
+      }
+    });
   }
 
   private resolver(resolve: Resolver): Promise<Result> {
