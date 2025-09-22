@@ -39,7 +39,7 @@ export class TypeormPersistentUnit implements PersistentUnit {
 
         const errors = results.filter((result) => !!result.error);
 
-        if (errors) {
+        if (errors.length > 0) {
           throw new TypeormVinegarError('Typeorm Vinegar Transaction', errors);
         }
 
