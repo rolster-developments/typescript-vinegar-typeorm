@@ -1,4 +1,5 @@
 import {
+  PersistentUnitResult,
   AbstractModel as RolsterAbstractModel,
   Model as RolsterModel,
   ModelEditable as RolsterModelEditable,
@@ -18,4 +19,13 @@ export interface Model extends ObjectLiteral, RolsterModel {}
 export interface Transaction<M extends AbstractModel = AbstractModel>
   extends RolsterTransaction {
   model: M;
+}
+
+export class TypeormVinegarError extends Error {
+  constructor(
+    message: string,
+    public readonly errors: PersistentUnitResult[]
+  ) {
+    super(message);
+  }
 }

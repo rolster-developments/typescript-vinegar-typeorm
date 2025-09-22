@@ -2,6 +2,7 @@ import { AbstractPersistentUnit, PersistentUnitResult } from '@rolster/vinegar';
 import { EntityDatabase } from './database';
 import { EntityManager } from './entity-manager';
 import { AbstractTypeormVinegar, getCurrentVinegar } from './typeorm-manager';
+import { TypeormVinegarError } from './types';
 
 export abstract class PersistentUnit extends AbstractPersistentUnit {
   abstract setTypeorm(typeorm: AbstractTypeormVinegar): void;
@@ -35,7 +36,13 @@ export class TypeormPersistentUnit implements PersistentUnit {
         await this.database.transaction();
 
         results = await this.manager.flush();
-        
+
+        const errors = results.filter((result) => !!result.error);
+
+        if (errors) {
+          throw new TypeormVinegarError('Typeorm Vinegar Transaction', errors);
+        }
+
         await this.database.commit();
       }
 
