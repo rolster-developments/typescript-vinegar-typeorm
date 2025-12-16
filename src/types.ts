@@ -1,18 +1,18 @@
 import {
-  PersistentUnitResult,
   AbstractModel as RolsterAbstractModel,
+  EditableModel as RolsterEditableModel,
+  HideableModel as RolsterHideableModel,
   Model as RolsterModel,
-  ModelEditable as RolsterModelEditable,
-  ModelHideable as RolsterModelHideable,
+  PersistentUnitResult,
   Transaction as RolsterTransaction
 } from '@rolster/vinegar';
 import { ObjectLiteral } from 'typeorm';
 
 export interface AbstractModel extends ObjectLiteral, RolsterAbstractModel {}
 
-export interface ModelEditable extends ObjectLiteral, RolsterModelEditable {}
+export interface EditableModel extends ObjectLiteral, RolsterEditableModel {}
 
-export interface ModelHideable extends ObjectLiteral, RolsterModelHideable {}
+export interface HideableModel extends ObjectLiteral, RolsterHideableModel {}
 
 export interface Model extends ObjectLiteral, RolsterModel {}
 

@@ -1,19 +1,18 @@
 import {
   AbstractEntityDataSource,
   AbstractProcedure,
-  DirtyModel,
+  HideableModel,
   Model,
-  ModelHideable,
-  PersistentUnitResultCode,
-  PersistentUnitResult as Result
+  PersistentUnitResult,
+  PersistentUnitResultCode
 } from '@rolster/vinegar';
 import { EntityManager, QueryRunner } from 'typeorm';
-import { AbstractModel, Transaction } from './types';
+import { AbstractModel } from './types';
 
-type Resolver = (entityManager: EntityManager) => Promise<Result>;
+type Resolver = (entityManager: EntityManager) => Promise<PersistentUnitResult>;
 
 function success(code: PersistentUnitResultCode, model?: AbstractModel) {
-  return new Result(code, undefined, model);
+  return new PersistentUnitResult(code, undefined, model);
 }
 
 function failure(
@@ -21,10 +20,10 @@ function failure(
   error?: any,
   model?: AbstractModel
 ) {
-  return new Result(code, error, model);
+  return new PersistentUnitResult(code, error, model);
 }
 
-export abstract class EntityDataSource extends AbstractEntityDataSource<Transaction> {
+export abstract class EntityDataSource extends AbstractEntityDataSource {
   abstract setQueryRunner(queryRunner: QueryRunner): void;
 }
 
@@ -35,7 +34,7 @@ export class TypeormEntityDataSource implements EntityDataSource {
     this.queryRunner = queryRunner;
   }
 
-  public insert(model: Model): Promise<Result> {
+  public insert(model: Model): Promise<PersistentUnitResult> {
     return this.resolver(async (manager) => {
       try {
         await manager.save(model);
@@ -47,22 +46,13 @@ export class TypeormEntityDataSource implements EntityDataSource {
     });
   }
 
-  public refresh(transaction: Transaction): Promise<Result> {
-    return this.resolver(async (_) => {
-      try {
-        await transaction.execute();
-
-        return success('refresh');
-      } catch (err) {
-        return failure('refresh', err);
-      }
-    });
-  }
-
-  public update(model: Model, dirty: DirtyModel): Promise<Result> {
+  public update(
+    model: Model,
+    changes: LiteralObject
+  ): Promise<PersistentUnitResult> {
     return this.resolver(async (manager) => {
       try {
-        await manager.update(model.constructor, { id: model.id }, dirty);
+        await manager.update(model.constructor, { id: model.id }, changes);
 
         return success('update', model);
       } catch (err) {
@@ -71,7 +61,23 @@ export class TypeormEntityDataSource implements EntityDataSource {
     });
   }
 
-  public delete(model: Model): Promise<Result> {
+  public refresh(models: Model[]): Promise<PersistentUnitResult> {
+    return this.resolver(async (manager) => {
+      try {
+        await Promise.all(
+          models.map((model) => {
+            return manager.update(model.constructor, { id: model.id }, model);
+          })
+        );
+
+        return success('refresh');
+      } catch (err) {
+        return failure('refresh', err);
+      }
+    });
+  }
+
+  public delete(model: Model): Promise<PersistentUnitResult> {
     return this.resolver(async (manager) => {
       try {
         await manager.remove(model);
@@ -83,7 +89,7 @@ export class TypeormEntityDataSource implements EntityDataSource {
     });
   }
 
-  public hidden(model: ModelHideable): Promise<Result> {
+  public hidden(model: HideableModel): Promise<PersistentUnitResult> {
     return this.resolver(async (manager) => {
       try {
         model.hiddenAt = new Date();
@@ -98,7 +104,9 @@ export class TypeormEntityDataSource implements EntityDataSource {
     });
   }
 
-  public procedure(procedure: AbstractProcedure): Promise<Result> {
+  public procedure(
+    procedure: AbstractProcedure
+  ): Promise<PersistentUnitResult> {
     return this.resolver(async (manager) => {
       try {
         await procedure.execute(manager);
@@ -110,10 +118,10 @@ export class TypeormEntityDataSource implements EntityDataSource {
     });
   }
 
-  private resolver(resolve: Resolver): Promise<Result> {
+  private resolver(resolve: Resolver): Promise<PersistentUnitResult> {
     return !this.queryRunner
       ? Promise.resolve(
-          new Result('operation', new Error('Runner not defined'))
+          new PersistentUnitResult('operation', new Error('Runner not defined'))
         )
       : resolve(this.queryRunner.manager);
   }

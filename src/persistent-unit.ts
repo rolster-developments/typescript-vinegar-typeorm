@@ -12,7 +12,7 @@ export class TypeormPersistentUnit implements PersistentUnit {
   private vinegar?: AbstractTypeormVinegar;
 
   constructor(
-    private database: EntityDatabase,
+    private readonly database: EntityDatabase,
     public readonly manager: EntityManager
   ) {}
 
