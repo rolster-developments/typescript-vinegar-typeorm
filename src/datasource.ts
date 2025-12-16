@@ -4,7 +4,8 @@ import {
   HideableModel,
   Model,
   PersistentUnitResult,
-  PersistentUnitResultCode
+  PersistentUnitResultCode,
+  RefreshModel
 } from '@rolster/vinegar';
 import { EntityManager, QueryRunner } from 'typeorm';
 import { AbstractModel } from './types';
@@ -61,12 +62,22 @@ export class TypeormEntityDataSource implements EntityDataSource {
     });
   }
 
-  public refresh(models: Model[]): Promise<PersistentUnitResult> {
+  public refresh(refreshs: RefreshModel[]): Promise<PersistentUnitResult> {
     return this.resolver(async (manager) => {
       try {
         await Promise.all(
-          models.map((model) => {
-            return manager.update(model.constructor, { id: model.id }, model);
+          refreshs.map((refresh) => {
+            const changes = refresh.getChanges();
+
+            if (!changes) {
+              return Promise.resolve(undefined);
+            }
+
+            return manager.update(
+              refresh.model.constructor,
+              { id: refresh.model.id },
+              changes
+            );
           })
         );
 
