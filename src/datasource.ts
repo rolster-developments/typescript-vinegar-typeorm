@@ -65,21 +65,17 @@ export class TypeormEntityDataSource implements EntityDataSource {
   public refresh(refreshs: RefreshModel[]): Promise<PersistentUnitResult> {
     return this.resolver(async (manager) => {
       try {
-        await Promise.all(
-          refreshs.map((refresh) => {
-            const changes = refresh.getChanges();
+        for (const refresh of refreshs) {
+          const changes = refresh.getChanges();
 
-            if (!changes) {
-              return Promise.resolve(undefined);
-            }
-
-            return manager.update(
+          if (changes) {
+            await manager.update(
               refresh.model.constructor,
               { id: refresh.model.id },
               changes
             );
-          })
-        );
+          }
+        }
 
         return success('refresh');
       } catch (err) {
@@ -130,10 +126,12 @@ export class TypeormEntityDataSource implements EntityDataSource {
   }
 
   private resolver(resolve: Resolver): Promise<PersistentUnitResult> {
-    return !this.queryRunner
-      ? Promise.resolve(
-          new PersistentUnitResult('operation', new Error('Runner not defined'))
-        )
-      : resolve(this.queryRunner.manager);
+    if (!this.queryRunner) {
+      return Promise.resolve(
+        new PersistentUnitResult('operation', new Error('Runner not defined'))
+      );
+    }
+
+    return resolve(this.queryRunner.manager);
   }
 }

@@ -7,60 +7,78 @@ import {
 } from 'typeorm';
 
 export interface AbstractTypeormVinegar {
-  createQueryRunner(): Undefined<QueryRunner>;
+  createQueryRunner(): QueryRunner;
   createRepository<T extends ObjectLiteral>(
     target: EntityTarget<T>
-  ): Undefined<Repository<T>>;
+  ): Repository<T>;
 }
 
 class TypeormVinegar implements AbstractTypeormVinegar {
-  constructor(private dataSource?: DataSource) {}
+  constructor(private readonly dataSource: DataSource) {}
 
-  public setDataSource(dataSource: DataSource): void {
-    this.dataSource = dataSource;
-  }
-
-  public getDataSource(): Undefined<DataSource> {
+  public getDataSource(): DataSource {
     return this.dataSource;
   }
 
-  public createQueryRunner(): Undefined<QueryRunner> {
-    return this.dataSource?.createQueryRunner();
+  public createQueryRunner(): QueryRunner {
+    return this.dataSource.createQueryRunner();
   }
 
   public createRepository<T extends ObjectLiteral>(
     target: EntityTarget<T>
-  ): Undefined<Repository<T>> {
-    return this.dataSource?.getRepository<T>(target);
+  ): Repository<T> {
+    return this.dataSource.getRepository<T>(target);
   }
 }
 
-const vinegar = new TypeormVinegar();
+let _typeormVinegar: TypeormVinegar | undefined = undefined;
 
 export function createVinegar(dataSource: DataSource): AbstractTypeormVinegar {
   return new TypeormVinegar(dataSource);
 }
 
-export function getCurrentVinegar(): AbstractTypeormVinegar {
-  return vinegar;
+export function getTypeormVinegar(): AbstractTypeormVinegar {
+  if (!_typeormVinegar) {
+    throw Error(
+      "Sorry, we can't perform data queries because DataSource is undefined"
+    );
+  }
+
+  return _typeormVinegar;
 }
 
 export function setDataSource(dataSource: DataSource): void {
-  vinegar.setDataSource(dataSource);
+  _typeormVinegar = new TypeormVinegar(dataSource);
 }
 
-export function getDataSource(): Undefined<DataSource> {
-  return vinegar.getDataSource();
+export function getDataSource(): DataSource {
+  const dataSource = _typeormVinegar?.getDataSource();
+
+  if (!dataSource) {
+    throw Error(
+      "Sorry, we can't perform data queries because DataSource is undefined"
+    );
+  }
+
+  return dataSource;
 }
 
-export function createQueryRunner(): Undefined<QueryRunner> {
-  return vinegar.createQueryRunner();
+export function createQueryRunner(): QueryRunner {
+  const queryRunner = _typeormVinegar?.createQueryRunner();
+
+  if (!queryRunner) {
+    throw Error(
+      "Sorry, we can't perform data queries because DataSource is undefined"
+    );
+  }
+
+  return queryRunner;
 }
 
 export function createRepository<T extends ObjectLiteral>(
   target: EntityTarget<T>
 ): Repository<T> {
-  const repository = vinegar.createRepository(target);
+  const repository = _typeormVinegar?.createRepository(target);
 
   if (!repository) {
     throw Error(

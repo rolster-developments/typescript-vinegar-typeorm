@@ -1,4 +1,4 @@
-import { AbstractTypeormVinegar, getCurrentVinegar } from './typeorm-manager';
+import { AbstractTypeormVinegar, getTypeormVinegar } from './typeorm-manager';
 
 type Callback<T> = () => Promise<T | void>;
 type Result<T> = Promise<T | void>;
@@ -8,10 +8,6 @@ async function resolveTransaction<T = any>(
   callback: Callback<T>
 ): Result<T> {
   const queryRunner = vinegar.createQueryRunner();
-
-  if (!queryRunner) {
-    return Promise.resolve();
-  }
 
   try {
     await queryRunner.connect();
@@ -41,7 +37,7 @@ export async function transaction<T = any>(
   callback?: Callback<T>
 ): Result<T> {
   if (typeof vinegar === 'function') {
-    return resolveTransaction(getCurrentVinegar(), vinegar);
+    return resolveTransaction(getTypeormVinegar(), vinegar);
   }
 
   if (callback) {
