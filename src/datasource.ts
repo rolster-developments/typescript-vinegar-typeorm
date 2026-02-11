@@ -5,6 +5,7 @@ import {
   Model,
   PersistentUnitResult,
   PersistentUnitResultCode,
+  QueryEntityManager,
   RefreshModel
 } from '@rolster/vinegar';
 import { EntityManager, QueryRunner } from 'typeorm';
@@ -36,9 +37,9 @@ export class TypeormEntityDataSource implements EntityDataSource {
   }
 
   public insert(model: Model): Promise<PersistentUnitResult> {
-    return this.resolver(async (manager) => {
+    return this.resolve(async (entityManager) => {
       try {
-        await manager.save(model);
+        await entityManager.save(model);
 
         return success('insert', model);
       } catch (err) {
@@ -51,9 +52,9 @@ export class TypeormEntityDataSource implements EntityDataSource {
     model: Model,
     changes: LiteralObject
   ): Promise<PersistentUnitResult> {
-    return this.resolver(async (manager) => {
+    return this.resolve(async (entityManager) => {
       try {
-        await manager.update(model.constructor, { id: model.id }, changes);
+        await entityManager.update(model.constructor, { id: model.id }, changes);
 
         return success('update', model);
       } catch (err) {
@@ -63,13 +64,13 @@ export class TypeormEntityDataSource implements EntityDataSource {
   }
 
   public refresh(refreshs: RefreshModel[]): Promise<PersistentUnitResult> {
-    return this.resolver(async (manager) => {
+    return this.resolve(async (entityManager) => {
       try {
         for (const refresh of refreshs) {
           const changes = refresh.getChanges();
 
           if (changes) {
-            await manager.update(
+            await entityManager.update(
               refresh.model.constructor,
               { id: refresh.model.id },
               changes
@@ -85,9 +86,9 @@ export class TypeormEntityDataSource implements EntityDataSource {
   }
 
   public delete(model: Model): Promise<PersistentUnitResult> {
-    return this.resolver(async (manager) => {
+    return this.resolve(async (entityManager) => {
       try {
-        await manager.remove(model);
+        await entityManager.remove(model);
 
         return success('delete', model);
       } catch (err) {
@@ -97,12 +98,12 @@ export class TypeormEntityDataSource implements EntityDataSource {
   }
 
   public hidden(model: HideableModel): Promise<PersistentUnitResult> {
-    return this.resolver(async (manager) => {
+    return this.resolve(async (entityManager) => {
       try {
         model.hiddenAt = new Date();
         model.hidden = true;
 
-        await manager.update(model.constructor, { id: model.id }, model);
+        await entityManager.update(model.constructor, { id: model.id }, model);
 
         return success('hidden', model);
       } catch (err) {
@@ -112,11 +113,12 @@ export class TypeormEntityDataSource implements EntityDataSource {
   }
 
   public procedure(
+    queryManager: QueryEntityManager,
     procedure: AbstractProcedure
   ): Promise<PersistentUnitResult> {
-    return this.resolver(async (manager) => {
+    return this.resolve(async (entityManager) => {
       try {
-        await procedure.execute(manager);
+        await procedure.execute(queryManager, entityManager);
 
         return success('procedure');
       } catch (err) {
@@ -125,13 +127,13 @@ export class TypeormEntityDataSource implements EntityDataSource {
     });
   }
 
-  private resolver(resolve: Resolver): Promise<PersistentUnitResult> {
+  private resolve(resolver: Resolver): Promise<PersistentUnitResult> {
     if (!this.queryRunner) {
       return Promise.resolve(
         new PersistentUnitResult('operation', new Error('Runner not defined'))
       );
     }
 
-    return resolve(this.queryRunner.manager);
+    return resolver(this.queryRunner.manager);
   }
 }
