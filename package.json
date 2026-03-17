@@ -39,9 +39,6 @@
     "@rolster/vinegar": "^3.5.0",
     "typeorm": "^0.3.27"
   },
-  "overrides": {
-    "glob": "^13.0.0"
-  },
   "devDependencies": {
     "@rolster/rollup": "^1.0.10",
     "@rolster/types": "^1.1.0",
