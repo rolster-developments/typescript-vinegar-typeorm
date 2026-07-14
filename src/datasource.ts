@@ -8,7 +8,9 @@ import {
   QueryEntityManager,
   RefreshModel
 } from '@rolster/vinegar';
+
 import { EntityManager, QueryRunner } from 'typeorm';
+
 import { AbstractModel } from './types';
 
 type Resolver = (entityManager: EntityManager) => Promise<PersistentUnitResult>;

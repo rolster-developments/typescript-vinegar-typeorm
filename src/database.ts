@@ -1,4 +1,5 @@
 import { AbstractEntityDatabase } from '@rolster/vinegar';
+
 import { QueryRunner } from 'typeorm';
 
 export abstract class EntityDatabase extends AbstractEntityDatabase {

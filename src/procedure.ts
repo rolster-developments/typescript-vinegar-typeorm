@@ -1,4 +1,5 @@
 import { AbstractProcedure, QueryEntityManager } from '@rolster/vinegar';
+
 import { EntityManager } from 'typeorm';
 
 export abstract class TypeormAbstractProcedure extends AbstractProcedure {

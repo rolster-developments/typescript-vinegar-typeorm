@@ -1,4 +1,5 @@
 import { AbstractPersistentUnit, PersistentUnitResult } from '@rolster/vinegar';
+
 import { EntityDatabase } from './database';
 import { EntityManager } from './entity-manager';
 import { AbstractTypeormVinegar, getTypeormVinegar } from './typeorm-manager';
