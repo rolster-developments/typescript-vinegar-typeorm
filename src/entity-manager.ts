@@ -3,7 +3,6 @@ import {
   EntityManager as RolsterEntityManager
 } from '@rolster/vinegar';
 import { QueryRunner } from 'typeorm';
-
 import { EntityDataSource } from './datasource';
 
 export abstract class EntityManager extends AbstractEntityManager {
