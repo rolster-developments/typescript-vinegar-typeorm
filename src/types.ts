@@ -6,7 +6,6 @@ import {
   PersistentUnitResult,
   Transaction as RolsterTransaction
 } from '@rolster/vinegar';
-
 import { ObjectLiteral } from 'typeorm';
 
 export interface AbstractModel extends ObjectLiteral, RolsterAbstractModel {}
