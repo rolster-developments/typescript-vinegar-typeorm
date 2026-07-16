@@ -16,8 +16,9 @@ export interface HideableModel extends ObjectLiteral, RolsterHideableModel {}
 
 export interface Model extends ObjectLiteral, RolsterModel {}
 
-export interface Transaction<M extends AbstractModel = AbstractModel>
-  extends RolsterTransaction {
+export interface Transaction<
+  M extends AbstractModel = AbstractModel
+> extends RolsterTransaction {
   model: M;
 }
 

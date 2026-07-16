@@ -54,7 +54,11 @@ export class TypeormEntityDataSource implements EntityDataSource {
   ): Promise<PersistentUnitResult> {
     return this.resolve(async (entityManager) => {
       try {
-        await entityManager.update(model.constructor, { id: model.id }, changes);
+        await entityManager.update(
+          model.constructor,
+          { id: model.id },
+          changes
+        );
 
         return success('update', model);
       } catch (err) {
