@@ -9,6 +9,7 @@ import {
   RefreshModel
 } from '@rolster/vinegar';
 import { EntityManager, QueryRunner } from 'typeorm';
+import { normalize } from './helpers';
 import { AbstractModel } from './types';
 
 type Resolver = (entityManager: EntityManager) => Promise<PersistentUnitResult>;
@@ -57,7 +58,7 @@ export class TypeormEntityDataSource implements EntityDataSource {
         await entityManager.update(
           model.constructor,
           { id: model.id },
-          changes
+          normalize(changes)
         );
 
         return success('update', model);
@@ -77,7 +78,7 @@ export class TypeormEntityDataSource implements EntityDataSource {
             await entityManager.update(
               refresh.model.constructor,
               { id: refresh.model.id },
-              changes
+              normalize(changes)
             );
           }
         }
