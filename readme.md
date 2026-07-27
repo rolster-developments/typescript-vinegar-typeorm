@@ -52,13 +52,13 @@ setDataSource(dataSource); // register globally
 
 Registry helpers:
 
-| Function                     | Returns / does                                         |
-| ---------------------------- | ------------------------------------------------------ |
-| `setDataSource(dataSource)`  | Registers the global data source.                      |
-| `getDataSource()`            | Returns the registered `DataSource`.                   |
-| `createVinegar(dataSource)`  | Builds a standalone vinegar instance (no global state).|
-| `createQueryRunner()`        | A new TypeORM `QueryRunner` from the registry.         |
-| `createRepository(target)`   | A TypeORM `Repository<T>` for an entity.               |
+| Function                    | Returns / does                                          |
+| --------------------------- | ------------------------------------------------------- |
+| `setDataSource(dataSource)` | Registers the global data source.                       |
+| `getDataSource()`           | Returns the registered `DataSource`.                    |
+| `createVinegar(dataSource)` | Builds a standalone vinegar instance (no global state). |
+| `createQueryRunner()`       | A new TypeORM `QueryRunner` from the registry.          |
+| `createRepository(target)`  | A TypeORM `Repository<T>` for an entity.                |
 
 ## Transactions
 
@@ -85,7 +85,9 @@ You can also pass an explicit vinegar instance as the first argument:
 import { createVinegar, transaction } from '@rolster/vinegar-typeorm';
 
 const vinegar = createVinegar(dataSource);
-await transaction(vinegar, async () => { /* ... */ });
+await transaction(vinegar, async () => {
+  /* ... */
+});
 ```
 
 ## Unit of Work
@@ -135,7 +137,10 @@ class TouchUsersProcedure extends TypeormAbstractProcedure {
     super();
   }
 
-  public async execute(_query: QueryEntityManager, em: EntityManager): Promise<void> {
+  public async execute(
+    _query: QueryEntityManager,
+    em: EntityManager
+  ): Promise<void> {
     await em
       .createQueryBuilder()
       .update(UserModel)
