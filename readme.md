@@ -56,15 +56,23 @@ Registry helpers:
 | --------------------------- | ------------------------------------------------------- |
 | `setDataSource(dataSource)` | Registers the global data source.                       |
 | `getDataSource()`           | Returns the registered `DataSource`.                    |
+| `getTypeormVinegar()`       | The registered vinegar (`AbstractTypeormVinegar`).      |
 | `createVinegar(dataSource)` | Builds a standalone vinegar instance (no global state). |
 | `createQueryRunner()`       | A new TypeORM `QueryRunner` from the registry.          |
 | `createRepository(target)`  | A TypeORM `Repository<T>` for an entity.                |
+
+`getDataSource`, `getTypeormVinegar`, `createQueryRunner` and
+`createRepository` throw
+`Error("Sorry, we can't perform data queries because DataSource is undefined")`
+when `setDataSource` has not been called yet.
 
 ## Transactions
 
 The `transaction` helper runs a callback inside a `connect → startTransaction →
 commit` block, rolling back automatically on error and always releasing the
-`QueryRunner`.
+`QueryRunner`. Its signature is
+`transaction<T>(callback: () => Promise<T | void>): Promise<T | void>`, so the
+resolved value is typed `T | void`.
 
 ```typescript
 import { transaction, createRepository } from '@rolster/vinegar-typeorm';
@@ -76,10 +84,12 @@ const order = await transaction(async () => {
   const user = await users.findOneByOrFail({ id: 1 });
   return orders.save({ user, total: 9900 });
 });
-// committed if the callback resolves, rolled back if it throws
+// order is `OrderModel | void`: the callback value once committed;
+// the transaction is rolled back and the error rethrown if the callback throws
 ```
 
-You can also pass an explicit vinegar instance as the first argument:
+You can also pass an explicit vinegar instance (an `AbstractTypeormVinegar`,
+as returned by `createVinegar`) as the first argument:
 
 ```typescript
 import { createVinegar, transaction } from '@rolster/vinegar-typeorm';
@@ -123,14 +133,34 @@ const results = await unit.flush();
 registry; call `unit.setTypeorm(createVinegar(dataSource))` to use a specific
 data source instead.
 
+### Abstract classes
+
+Each `Typeorm*` concrete implements an abstract class of this package that
+extends the `@rolster/vinegar` contract with the TypeORM-specific setter. Type
+your own code against these abstractions rather than the concretes:
+
+| Abstract class     | Extends                    | Adds                          |
+| ------------------ | -------------------------- | ----------------------------- |
+| `EntityDatabase`   | `AbstractEntityDatabase`   | `setQueryRunner(queryRunner)` |
+| `EntityDataSource` | `AbstractEntityDataSource` | `setQueryRunner(queryRunner)` |
+| `EntityManager`    | `AbstractEntityManager`    | `setQueryRunner(queryRunner)` |
+| `PersistentUnit`   | `AbstractPersistentUnit`   | `setTypeorm(vinegar)`         |
+
+`TypeormEntityManager` takes an `EntityDataSource` and forwards
+`setQueryRunner` to it; `TypeormPersistentUnit` takes an `EntityDatabase` and
+an `EntityManager` and sets the `QueryRunner` on both before each `flush()`.
+
 ## Custom procedures
 
 Extend `TypeormAbstractProcedure` to run arbitrary TypeORM queries within the
-unit of work. `execute` receives the vinegar query manager and TypeORM's own
-`EntityManager`:
+unit of work. `execute` receives the vinegar `QueryEntityManager` and TypeORM's
+own `EntityManager` (import it from `typeorm`; this package also exports an
+abstract `EntityManager`, which is a different class):
 
 ```typescript
+import { QueryEntityManager } from '@rolster/vinegar';
 import { TypeormAbstractProcedure } from '@rolster/vinegar-typeorm';
+import { EntityManager } from 'typeorm';
 
 class TouchUsersProcedure extends TypeormAbstractProcedure {
   constructor(private ids: number[]) {
@@ -152,6 +182,15 @@ class TouchUsersProcedure extends TypeormAbstractProcedure {
 
 manager.procedure(new TouchUsersProcedure([1, 2, 3]));
 ```
+
+## Types
+
+| Type                                                          | Description                                                                                                                                                           |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AbstractTypeormVinegar`                                      | `{ createQueryRunner(): QueryRunner; createRepository(target): Repository<T> }`; returned by `createVinegar`, accepted by `transaction(vinegar, cb)` and `setTypeorm` |
+| `AbstractModel` / `EditableModel` / `HideableModel` / `Model` | the `@rolster/vinegar` model interfaces merged with TypeORM's `ObjectLiteral`; import these (not the plain `@rolster/vinegar` ones) when typing TypeORM entities      |
+| `Transaction<M>`                                              | the `@rolster/vinegar` `Transaction` (`execute(): Promise<void>`) plus a `model: M`                                                                                   |
+| `TypeormVinegarError`                                         | `Error` thrown by `TypeormPersistentUnit.flush()`, with the failed results in `errors: PersistentUnitResult[]`                                                        |
 
 ## Contributing
 
