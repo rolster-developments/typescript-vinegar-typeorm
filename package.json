@@ -1,6 +1,6 @@
 {
   "name": "@rolster/vinegar-typeorm",
-  "version": "4.2.2",
+  "version": "4.3.0",
   "type": "module",
   "description": "Package containing clean architecture implementations with Typeorm.",
   "license": "MIT",
@@ -46,7 +46,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@rolster/rollup": "^3.0.0",
-    "@rolster/types": "^1.1.2",
+    "@rolster/types": "^1.2.0",
     "eslint": "^10.7.0",
     "eslint-plugin-perfectionist": "^5.10.0",
     "eslint-plugin-simple-import-sort": "^13.0.0",
