@@ -39,7 +39,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@rolster/commons": "^4.2.4",
+    "@rolster/commons": "^4.3.0",
     "@rolster/vinegar": "^4.1.4",
     "typeorm": "^1.1.0"
   },
