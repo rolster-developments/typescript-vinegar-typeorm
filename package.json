@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@rolster/commons": "^4.3.0",
-    "@rolster/vinegar": "^4.1.4",
+    "@rolster/vinegar": "^4.2.0",
     "typeorm": "^1.1.0"
   },
   "devDependencies": {
